@@ -5,6 +5,11 @@ name = "pypi"
 
 [packages]
 d6tflow = "*"
+sklearn = "*"
+pandas = "*"
+numpy = "*"
+scipy = "*"
+matplotlib = "*"
 
 [dev-packages]
 
