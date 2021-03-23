@@ -10,6 +10,8 @@ pandas = "*"
 numpy = "*"
 scipy = "*"
 matplotlib = "*"
+mlflow = "*"
+argparse = "*"
 
 [dev-packages]
 

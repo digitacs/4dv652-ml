@@ -36,9 +36,12 @@ class TaskMergeData(d6tflow.tasks.TaskPqPandas):  # save dataframe as parquet
     
 @d6tflow.requires(TaskMergeData)
 class TaskPrepareData(d6tflow.tasks.TaskPqPandas):  
-    targetScore = luigi.Parameter(default="Target")
-    targetClassifier = luigi.Parameter(default="Target")
-    columnsToDiscard = luigi.Parameter(default=[])
+    preparation_score_target = luigi.Parameter(default="AimoScore")
+    preparation_weakestlink_target = luigi.Parameter(default="WeakLinks")
+    preparation_weakestlink_removeLessThan = luigi.FloatParameter(default=0)
+    preparation_cleanup_identicalThreshold = luigi.FloatParameter(default=1)
+    preparation_cleanup_symmetricThreshold = luigi.FloatParameter(default=0.95)
+    preparation_columnsToDiscard = luigi.Parameter(default="")
 
 
     def correlatedColumnsFirstHalf(self,data,minThreshold):
@@ -50,7 +53,7 @@ class TaskPrepareData(d6tflow.tasks.TaskPqPandas):
             for j in corr[i][abs(corr[i])>=minThreshold].index:
                 if i != j:
                     if i not in keep:
-                        if(i != self.targetScore):
+                        if(i != self.preparation_score_target):
                             pairs.append(i)
                             keep.append(j)
         
@@ -60,28 +63,30 @@ class TaskPrepareData(d6tflow.tasks.TaskPqPandas):
         # Load the data
         data = self.inputLoad()
         # Find the weakest link for each data point
-        data[self.targetClassifier] = data.loc[:,"ForwardHead":"RightHeelRises"].idxmax(axis=1)
+        data[self.preparation_weakestlink_target] = data.loc[:,"ForwardHead":"RightHeelRises"].idxmax(axis=1)
         # Discard extra columns
         data.drop(data.columns.to_series()["ForwardHead":"RightHeelRises"], axis=1, inplace=True)
         # Remove Duplicates
         data = data.drop_duplicates(subset="ID")
         # Remove clusters with very few samples
-        temp = (data[self.targetClassifier].value_counts()<10)
+        temp = (data[self.preparation_weakestlink_target].value_counts() < self.preparation_weakestlink_removeLessThan)
         temp = temp[~temp == False]
-        data = data[~data[self.targetClassifier].isin(temp.index)]
+        data = data[~data[self.preparation_weakestlink_target].isin(temp.index)]
 
         # Removing the identical variables
         data = data.drop(
-            columns=self.correlatedColumnsFirstHalf(data,minThreshold=1)
+            columns=self.correlatedColumnsFirstHalf(data, minThreshold=self.preparation_cleanup_identicalThreshold)
         )
 
         # Removing the symmetric variables
         data = data.drop(
-            columns=self.correlatedColumnsFirstHalf(data,minThreshold=0.8)
+            columns=self.correlatedColumnsFirstHalf(data, minThreshold=self.preparation_cleanup_symmetricThreshold)
         )
 
         #Discard extra columns
-        for column in self.columnsToDiscard:
+        for column in self.preparation_columnsToDiscard.split(","):
+            if len(column) == 0:
+                continue
             data = data.drop(
                 columns=[column]
             )
@@ -90,19 +95,18 @@ class TaskPrepareData(d6tflow.tasks.TaskPqPandas):
 
 @d6tflow.requires(TaskPrepareData)
 class TaskSavePreparedDataToCsv(d6tflow.tasks.TaskPqPandas):  
-    datasetFileName = luigi.FloatParameter(default="preparedData")
+    output_dataset_fileName = luigi.FloatParameter(default="preparedData")
 
     def run(self):
         # Load the data
         data = self.inputLoad()
-        data.to_csv('./datasets/'+self.datasetFileName+'.csv')
+        data.to_csv('./datasets/'+self.output_dataset_fileName+'.csv')
 
 
 @d6tflow.requires(TaskPrepareData)
 class TaskTrainAndTestSplit(d6tflow.tasks.TaskPqPandas):  
-    trainingToTestRate = luigi.FloatParameter(default=0.8)
-    # So that you get the same results
-    seed = luigi.IntParameter(default=0)
+    training_trainingToTestRate = luigi.FloatParameter(default=0.8)
+    training_seed = luigi.IntParameter(default=0)
     persist = ['X_train', 'X_test', 'y_train', 'y_test']
 
     def run(self):
@@ -112,8 +116,8 @@ class TaskTrainAndTestSplit(d6tflow.tasks.TaskPqPandas):
         y_train,y_test ,X_train, X_test  = train_test_split(
             data[["WeakLinks","AimoScore"]], 
             data.drop(columns=["WeakLinks","AimoScore"]), 
-            train_size = self.trainingToTestRate,
-            random_state = self.seed
+            train_size = self.training_trainingToTestRate,
+            random_state = self.training_seed
         )
         
         self.save({'X_train': X_train, 'X_test': X_test,
@@ -122,43 +126,73 @@ class TaskTrainAndTestSplit(d6tflow.tasks.TaskPqPandas):
 
 @d6tflow.requires(TaskTrainAndTestSplit)
 class TaskTrainSVM(d6tflow.tasks.TaskPickle):  
-    kernel = luigi.Parameter(default="linear")
-    c = luigi.FloatParameter(default=-1)
-    gamma = luigi.FloatParameter(default=-1)
-    degree = luigi.FloatParameter(default=1)
-    targetClassifier = luigi.Parameter(default="Target")
+    training_model_parameters_kernel = luigi.Parameter(default="linear")
+    training_model_parameters_c = luigi.FloatParameter(default=-1)
+    training_model_parameters_gamma = luigi.FloatParameter(default=-1)
+    training_model_parameters_degree = luigi.FloatParameter(default=1)
+    training_target = luigi.Parameter(default="Target")
 
     def run(self):
         # Load the data
         X_train = self.inputLoad()['X_train']
         y_train = self.inputLoad()['y_train']
 
-        if(self.c != -1 and self.gamma != -1):
-            model = SVC(kernel=self.kernel,C=self.c, gamma=self.gamma, degree=self.degree)
-        elif (self.c != -1):
-            model = SVC(kernel=self.kernel,C=self.c, degree=self.degree)
-        elif (self.gamma != -1):
-            model = SVC(kernel=self.kernel,gamma=self.gamma, degree=self.degree)
+        if( self.training_model_parameters_c != -1 and self.training_model_parameters_gamma != -1 ):
+            model = SVC( 
+                kernel=self.training_model_parameters_kernel,
+                C=self.training_model_parameters_c,
+                gamma=self.training_model_parameters_gamma,
+                degree=self.training_model_parameters_degree
+            )
+        elif ( self.training_model_parameters_c != -1):
+            model = SVC(
+                kernel=self.training_model_parameters_kernel,
+                C=self.training_model_parameters_c,
+                degree=self.training_model_parameters_degree
+            )
+        elif ( self.training_model_parameters_gamma != -1):
+            model = SVC(
+                kernel=self.training_model_parameters_kernel,
+                gamma=self.training_model_parameters_gamma,
+                degree=self.training_model_parameters_degree
+            )
         else:
-            model = SVC(kernel=self.kernel, degree=self.degree)
+            model = SVC(
+                kernel=self.training_model_parameters_kernel,
+                degree=self.training_model_parameters_degree
+            )
 
         # Create and Train the model
-        model.fit(X_train, y_train[self.targetClassifier])
+        model.fit(X_train, y_train[self.training_target])
 
         self.save(model)
 
 
-@d6tflow.requires(TaskTrainSVM)
-class TaskSaveModel(d6tflow.tasks.TaskPickle):  
-    modelName = luigi.Parameter(default="model")
-    saveAs = luigi.Parameter(default="joblib")
+class TrainModel(object):
+    def train(self,config):
+            self.config = config
+            method_name='train_'+str(self.config["training_model_type"])
+            method=getattr(self,method_name,lambda :'Invalid')
 
-    def run(self):
-        model = self.inputLoad()
+            if(self.config["output_dataset_fileName"]):
+                d6tflow.run(TaskSavePreparedDataToCsv(**self.config))
 
-        if(self.saveAs == "joblib"):
-            dump(model, './models/'+self.modelName+'.joblib') 
-        else:
-            pickle_out = open('./models/'+self.modelName+'.pickle',"wb")
-            pickle.dumps(model,pickle_out)
-            pickle_out.close()
+            d6tflow.run(TaskTrainAndTestSplit(**self.config))
+            self.X_test = TaskTrainAndTestSplit(**self.config).output()["X_test"].load()
+            self.y_test = TaskTrainAndTestSplit(**self.config).output()["y_test"].load()["WeakLinks"]
+            return method()
+    
+    def save(self, model):
+        if(self.config["output_model_fileName"]):
+            if(self.config["output_model_saveAs"] == "joblib"):
+                dump(model, './models/'+self.config["output_model_fileName"]+'.joblib') 
+            else:
+                pickle_out = open('./models/'+self.config["output_model_fileName"]+'.pickle',"wb")
+                pickle.dumps(model,pickle_out)
+                pickle_out.close()
+
+    def train_SVM(self):
+            d6tflow.run(TaskTrainSVM(**self.config))
+            model = TaskTrainSVM(**self.config).output().load()
+            self.save(model)
+            return (model, model.score(self.X_test, self.y_test))

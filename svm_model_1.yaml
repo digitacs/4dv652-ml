@@ -1,0 +1,32 @@
+preparation:
+  score:
+    target: AimoScore
+  weakestlink:
+    target: WeakLinks
+    removeLessThan: 10
+  cleanup:
+    identicalThreshold: 1
+    symmetricThreshold: 0.81
+  columnsToDiscard: 
+  - ID
+  - Date
+  - EstimatedScore
+training:
+  target: WeakLinks
+  trainingToTestRate: 0.8
+  seed: 0
+  model:
+    type: SVM
+    parameters:
+      kernel: poly
+      c: 0.6
+      gamma: 0.5
+      degree: 3
+output:
+  dataset:
+    fileName: AimoScoreWeakLinks
+  model:
+    fileName: aimo_v13
+    saveAs: joblib
+
+

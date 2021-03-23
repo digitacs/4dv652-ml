@@ -1,39 +1,59 @@
 import d6tflow
+import os
+import yaml
 import cfg
 from tasks import aimo
+import mlflow
 import visualize
+import argparse
+import time
 
-params_model = {
-    'modelName':'aimo_v13',
-    'saveAs':'joblib',
-    'targetScore': 'AimoScore',
-    'targetClassifier': 'WeakLinks',
-    'aimoModel': 'ols', 
-    'weakestLinkModel': 'gls', 
-    'datasetFileName':'AimoScoreWeakLinks',
-    'checkCorrelationWith'
-    'trainingToTestRate': 0.8,
-    'columnsToDiscard':["ID","Date","EstimatedScore"],
-    'kernel':'poly',
-    'c':0.6,
-    'gamma':0.5,
-    'degree':3
-}
-
-# run workflow for model 
-d6tflow.run(aimo.TaskPrepareData(**params_model))
-d6tflow.run(aimo.TaskSavePreparedDataToCsv(**params_model))
-d6tflow.run(aimo.TaskTrainAndTestSplit(**params_model))
-d6tflow.run(aimo.TaskTrainSVM(**params_model))
-
-# TODO: Update save method, pass model to task as an argument instead
-d6tflow.run(aimo.TaskSaveModel(**params_model))
+# Define the program description
+descriptionText = '''Aimo Machin Learning Project.
+ This is the main entry point of the project and in order to train a model you should pass the configuration file path as a argument'''
 
 
-# compare results from new model
-model = aimo.TaskTrainSVM(**params_model).output().load()
-X_test = aimo.TaskTrainAndTestSplit(**params_model).output()["X_test"].load()
-y_test = aimo.TaskTrainAndTestSplit(**params_model).output()["y_test"].load()["WeakLinks"]
+# Initiate the parser
+parser = argparse.ArgumentParser(description=descriptionText)
+parser.add_argument("-V", "--version", help="show program version", action="store_true")
 
-print("Model accuracy: ",model.score(X_test, y_test))
-# 0.59
+# Add configuration file path argument
+parser.add_argument("-c", "--config", help="set the configuration", metavar='file', type=str)
+
+# Read arguments from the command line
+args = parser.parse_args()
+
+# Check for --version or -V
+if args.version:
+    print("AIMO ML Version "+cfg.version)
+elif args.config:
+    try:
+        with open(args.config) as configFile:
+            config = yaml.safe_load(configFile)
+    except:
+        pass
+
+    # run workflow for model 
+    config = cfg.flatten_config(config)
+    model_type = config["training_model_type"]
+
+    # Log all parameters in MLFlow
+    for key in config:
+        mlflow.log_param(key, config[key])
+
+    # Train the model
+    start_time = time.time()
+    trainer = aimo.TrainModel()
+    model, accuracy = trainer.train(config)
+    process_time = time.time() - start_time
+    
+
+    # compare results from new model
+    print("Model accuracy: ",accuracy)
+
+    # Log metric in MLFlow
+    mlflow.log_metric("accuracy", accuracy)
+    mlflow.log_metric("process_time", process_time)
+
+    # Save the model in MLFlow
+    mlflow.sklearn.log_model(model, "model")
