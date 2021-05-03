@@ -8,3 +8,7 @@ We discuss the work at team meetings, connect important parts, and merge them in
 
 ### To run the pipelines run the following command in the project root folder
 `python run.py`
+
+## Dashboard service
+
+`mlflow ui`
