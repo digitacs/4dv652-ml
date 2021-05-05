@@ -1,6 +1,6 @@
  *.json
 .creds*
-mlruns/
+mlruns/*
 
 .idea/
 data/
@@ -150,3 +150,5 @@ Icon
 Network Trash Folder
 Temporary Items
 .apdisk
+
+notebooks/assignment12/mlflow-312506-6387830e8324.json

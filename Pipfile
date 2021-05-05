@@ -12,6 +12,7 @@ scipy = "*"
 matplotlib = "*"
 mlflow = "*"
 argparse = "*"
+papermill = "*"
 
 [dev-packages]
 
