@@ -156,4 +156,8 @@ notebooks/assignment12/mlflow-312506-8cfad529f4fd.json
 notebooks/assignment13/mlflow-312506-8cfad529f4fd.json
 
 # All .jpg files
+<<<<<<< Updated upstream
 *.jpg
+=======
+*.jpg
+>>>>>>> Stashed changes
