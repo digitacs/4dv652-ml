@@ -1,5 +1,4 @@
 import numpy as np
-import matplotlib.pyplot as plt
 
 # Mirror
 # 'a' means all axis else 'x', 'y' or 'z'
@@ -121,6 +120,8 @@ def rotate(data, angle, posenet=False):
         return None
 
 # Test
+import matplotlib.pyplot as plt
+
 def drawP(data,posenet=False):
     try:
         aug_data = data.copy()
