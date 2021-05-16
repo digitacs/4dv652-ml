@@ -151,5 +151,8 @@ Network Trash Folder
 Temporary Items
 .apdisk
 
-notebooks/assignment12/mlflow-312506-8cfad529f4fd.json
-notebooks/assignment13/mlflow-312506-8cfad529f4fd.json
+#MLflow credentials
+keys/mlflow-312506-8cfad529f4fd.json
+
+# All .jpg files
+*.jpg
