@@ -59,31 +59,58 @@ def rotate(data, angle, posenet=False):
         if posenet:
             for index, row in aug_data.iterrows():
                 head_x, head_y = rotatePoint(angle,row['head_x'],row['head_y'])
-                leftShoulder_x, leftShoulder_y = rotatePoint(angle,row['leftShoulder_x'],row['leftShoulder_y'])
-                rightShoulder_x, rightShoulder_y = rotatePoint(angle,row['rightShoulder_x'],row['rightShoulder_y'])
-                leftElbow_x, leftElbow_y = rotatePoint(angle,row['leftElbow_x'],row['leftElbow_y'])
-                rightElbow_x, rightElbow_y = rotatePoint(angle,row['rightElbow_x'],row['rightElbow_y'])
-                leftWrist_x, leftWrist_y = rotatePoint(angle,row['leftWrist_x'],row['leftWrist_y'])
-                rightWrist_x, rightWrist_y = rotatePoint(angle,row['rightWrist_x'],row['rightWrist_y'])
-                leftHip_x, leftHip_y = rotatePoint(angle,row['leftHip_x'],row['leftHip_y'])
-                rightHip_x, rightHip_y = rotatePoint(angle,row['rightHip_x'],row['rightHip_y'])
-                leftKnee_x, leftKnee_y = rotatePoint(angle,row['leftKnee_x'],row['leftKnee_y'])
-                rightKnee_x, rightKnee_y = rotatePoint(angle,row['rightKnee_x'],row['rightKnee_y'])
-                leftAnkle_x, leftAnkle_y = rotatePoint(angle,row['leftAnkle_x'],row['leftAnkle_y'])
-                rightAnkle_x, rightAnkle_y = rotatePoint(angle,row['rightAnkle_x'],row['rightAnkle_y']) 
+                left_shoulder_x, left_shoulder_y = rotatePoint(angle,row['left_shoulder_x'],row['left_shoulder_y'])
+                right_shoulder_x, right_shoulder_y = rotatePoint(angle,row['right_shoulder_x'],row['right_shoulder_y'])
+                left_elbow_x, left_elbow_y = rotatePoint(angle,row['left_elbow_x'],row['left_elbow_y'])
+                right_elbow_x, right_elbow_y = rotatePoint(angle,row['right_elbow_x'],row['right_elbow_y'])
+                left_wrist_x, left_wrist_y = rotatePoint(angle,row['left_wrist_x'],row['left_wrist_y'])
+                right_wrist_x, right_wrist_y = rotatePoint(angle,row['right_wrist_x'],row['right_wrist_y'])
+                left_hip_x, left_hip_y = rotatePoint(angle,row['left_hip_x'],row['left_hip_y'])
+                right_hip_x, right_hip_y = rotatePoint(angle,row['right_hip_x'],row['right_hip_y'])
+                left_knee_x, left_knee_y = rotatePoint(angle,row['left_knee_x'],row['left_knee_y'])
+                right_knee_x, right_knee_y = rotatePoint(angle,row['right_knee_x'],row['right_knee_y'])
+                left_ankle_x, left_ankle_y = rotatePoint(angle,row['left_ankle_x'],row['left_ankle_y'])
+                right_ankle_x, right_ankle_y = rotatePoint(angle,row['right_ankle_x'],row['right_ankle_y']) 
                 aug_data = aug_data.append({'head_x':head_x,'head_y':head_y,
-                                            'leftShoulder_x':leftShoulder_x,'leftShoulder_y':leftShoulder_y,
-                                            'rightShoulder_x':rightShoulder_x,'rightShoulder_y':rightShoulder_y,
-                                            'leftElbow_x':leftElbow_x,'leftElbow_y':leftElbow_y,
-                                            'rightElbow_x':rightElbow_x,'rightElbow_y':rightElbow_y,
-                                            'leftWrist_x':leftWrist_x,'leftWrist_y':leftWrist_y,
-                                            'rightWrist_x':rightWrist_x,'rightWrist_y':rightWrist_y,
-                                            'leftHip_x':leftHip_x,'leftHip_y':leftHip_y,
-                                            'rightHip_x':rightHip_x,'rightHip_y':rightHip_y,
-                                            'leftKnee_x':leftKnee_x,'leftKnee_y':leftKnee_y,
-                                            'rightKnee_x':rightKnee_x,'rightKnee_y':rightKnee_y,
-                                            'leftAnkle_x':leftAnkle_x,'leftAnkle_y':leftAnkle_y,
-                                            'rightAnkle_x':rightAnkle_x,'rightAnkle_y':rightAnkle_y},ignore_index=True)
+                                            'left_shoulder_x':left_shoulder_x,'left_shoulder_y':left_shoulder_y,
+                                            'right_shoulder_x':right_shoulder_x,'right_shoulder_y':right_shoulder_y,
+                                            'left_elbow_x':left_elbow_x,'left_elbow_y':left_elbow_y,
+                                            'right_elbow_x':right_elbow_x,'right_elbow_y':right_elbow_y,
+                                            'left_wrist_x':left_wrist_x,'left_wrist_y':left_wrist_y,
+                                            'right_wrist_x':right_wrist_x,'right_wrist_y':right_wrist_y,
+                                            'left_hip_x':left_hip_x,'left_hip_y':left_hip_y,
+                                            'right_hip_x':right_hip_x,'right_hip_y':right_hip_y,
+                                            'left_knee_x':left_knee_x,'left_knee_y':left_knee_y,
+                                            'right_knee_x':right_knee_x,'right_knee_y':right_knee_y,
+                                            'left_ankle_x':left_ankle_x,'left_ankle_y':left_ankle_y,
+                                            'right_ankle_x':right_ankle_x,'right_ankle_y':right_ankle_y},ignore_index=True)
+            #for index, row in aug_data.iterrows():
+                #head_x, head_y = rotatePoint(angle,row['head_x'],row['head_y'])
+                #leftShoulder_x, leftShoulder_y = rotatePoint(angle,row['leftShoulder_x'],row['leftShoulder_y'])
+                #rightShoulder_x, rightShoulder_y = rotatePoint(angle,row['rightShoulder_x'],row['rightShoulder_y'])
+                #leftElbow_x, leftElbow_y = rotatePoint(angle,row['leftElbow_x'],row['leftElbow_y'])
+                #rightElbow_x, rightElbow_y = rotatePoint(angle,row['rightElbow_x'],row['rightElbow_y'])
+                #leftWrist_x, leftWrist_y = rotatePoint(angle,row['leftWrist_x'],row['leftWrist_y'])
+                #rightWrist_x, rightWrist_y = rotatePoint(angle,row['rightWrist_x'],row['rightWrist_y'])
+                #leftHip_x, leftHip_y = rotatePoint(angle,row['leftHip_x'],row['leftHip_y'])
+                #rightHip_x, rightHip_y = rotatePoint(angle,row['rightHip_x'],row['rightHip_y'])
+                #leftKnee_x, leftKnee_y = rotatePoint(angle,row['leftKnee_x'],row['leftKnee_y'])
+                #rightKnee_x, rightKnee_y = rotatePoint(angle,row['rightKnee_x'],row['rightKnee_y'])
+                #leftAnkle_x, leftAnkle_y = rotatePoint(angle,row['leftAnkle_x'],row['leftAnkle_y'])
+                #rightAnkle_x, rightAnkle_y = rotatePoint(angle,row['rightAnkle_x'],row['rightAnkle_y']) 
+                #aug_data = aug_data.append({'head_x':head_x,'head_y':head_y,
+                                            #'leftShoulder_x':leftShoulder_x,'leftShoulder_y':leftShoulder_y,
+                                            #'rightShoulder_x':rightShoulder_x,'rightShoulder_y':rightShoulder_y,
+                                            #'leftElbow_x':leftElbow_x,'leftElbow_y':leftElbow_y,
+                                            #'rightElbow_x':rightElbow_x,'rightElbow_y':rightElbow_y,
+                                            #'leftWrist_x':leftWrist_x,'leftWrist_y':leftWrist_y,
+                                            #'rightWrist_x':rightWrist_x,'rightWrist_y':rightWrist_y,
+                                            #'leftHip_x':leftHip_x,'leftHip_y':leftHip_y,
+                                            #'rightHip_x':rightHip_x,'rightHip_y':rightHip_y,
+                                            #'leftKnee_x':leftKnee_x,'leftKnee_y':leftKnee_y,
+                                            #'rightKnee_x':rightKnee_x,'rightKnee_y':rightKnee_y,
+                                            #'leftAnkle_x':leftAnkle_x,'leftAnkle_y':leftAnkle_y,
+                                            #'rightAnkle_x':rightAnkle_x,'rightAnkle_y':rightAnkle_y},ignore_index=True)
         else:
             for index, row in aug_data.iterrows():
                 head_x, head_y = rotatePoint(angle,row[' head_x'],row['head_y'])
